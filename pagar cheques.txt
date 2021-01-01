@@ -1,0 +1,16 @@
+ mapping(address => bool) debtor;
+    mapping(uint => uint) check;    
+
+function paycheck(uint _check) public {
+        require(debtor[msg.sender]);
+        require(check[_check] != 0); // si no existe el cheque devolvera cero. 
+        msg.sender.transfer(check[_check]);
+        debtor[msg.sender] = false;
+        
+    }
+    
+    function setdebtor(address _address, uint _checkId, uint256  _amount) segurity public {
+        check[_checkId] = _amount;
+        debtor[_address] = true;
+        
+    }

@@ -1,0 +1,14 @@
+function getArray() external pure returns(uint[]) {
+  // Instanciamos un nuevo array en memoria con una longitud de 3
+  uint[] memory values = new uint[](3);
+  // Le añadimos algunos valores
+  values.push(1);
+  values.push(2);
+  values.push(3);
+  // Devolvemos el arrays
+  return values;
+}
+
+Nota: los arrays de tipo memory deben ser creados con una longitud como argumento (en este ejemplo, 3). 
+Actualmente no pueden ser redimensionados como los arrays storage pueden serlo usando array.push(),
+ de todas maneras esto podría cambiar en futuras versiones de Solidity.

@@ -1,0 +1,16 @@
+function getEvens() pure external returns(uint[]) {
+  uint[] memory evens = new uint[](5);
+  // Guardamos el índice del nuevo array:
+  uint counter = 0;
+  // Iteramos del 1 al 10 con un bucle for:
+  for (uint i = 1; i <= 10; i++) {
+    // Si `i` es par...
+    if (i % 2 == 0) {
+      // Añadelo a nuestro array
+      evens[counter] = i;
+      // Incrementamos el contador al nuevo índice vacío de `evens`:
+      counter++;
+    }
+  }
+  return evens;
+}
