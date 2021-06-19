@@ -1,0 +1,78 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >=0.7.0 <0.9.0;
+
+
+library PublicOrInternal {
+    
+    /***
+     * Si en una libreria, existe una clasificación "public"
+     * de acceso en una función, se generará dos contratos:
+     * uno para la libreria, y otro para el contrato que la integra.
+     * En cambio, si la clasificación de acceso es internal, toda la libreria
+     * se integrará en el contrato que la hereda.
+     * 
+     * Prueba a compilar con dos diferentes clasificaciones de acceso.
+     * "public" y despues "internal", y comprueba cuantos contratos se compilan
+     * **/
+    
+    function takeAddress () public view returns(address) {
+        
+        return address(this);
+    }
+    
+
+
+}
+
+contract main  {
+    
+    function takeAddress() public view returns(address) {
+        
+        return PublicOrInternal.takeAddress();
+    }
+    
+}
+    
+    
+library Counter {
+    
+    /***
+     * Para que una libreria pueda afectar al estado de almacenamiento del contrato que la implemente
+     * tienen que ser estructuras de datos. Tipo, mapping, array o struct.
+     * */
+    
+    struct counter {
+        uint256 c;
+    }
+    
+
+     event Incremented(string);
+    
+    // storage, no memory, para que todos los cambios en esta variable se realicen en memoria persistente.
+    // De esta forma, como si fuese un parametro, podemos cambiar el estado del contrato que la implemente.
+    function increment(counter storage _counter) internal returns(uint256) {
+        
+        emit Incremented('Sumamos uno');
+        
+        /***
+         * la sumatoria "++" está ANTES que el retorno porque en caso contrario, retornaria
+         * y no haria la sumatoria. */
+        return ++_counter.c;
+    }
+    
+}
+
+contract CounterContract {
+    
+    using Counter for Counter.counter;
+    
+    Counter.counter public _counter;
+    
+    
+    function increment() public returns(uint256) {
+   // fijese que no se usa el parametro. La variable de estado del contrato apunta directamente a ella.     
+        return _counter.increment(); 
+    }
+    
+}
