@@ -1,0 +1,18 @@
+{
+  "name": "canales-pago",
+  "version": "1.0.0",
+  "description": "Concepto de canal de pago y su implementacion",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node config.js"
+  },
+  "author": "Fernando Lopez",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "ethereumjs-tx": "^2.1.2",
+    "solc": "^0.6.12",
+    "web3": "^1.3.6"
+  }
+}
