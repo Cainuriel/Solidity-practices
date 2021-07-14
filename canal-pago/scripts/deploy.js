@@ -19,7 +19,7 @@ async function main() {
 
   await payments.deployed();
 
-  console.log("PaymentChannel contract deployed to:", payments.address);
+  console.log("ReceiverPays contract deployed to:", payments.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
@@ -31,5 +31,3 @@ main()
     process.exit(1);
   });
 
-  // Primer contrato deployado.
-// 0x2f2Dd83386704C2F1ad971fe850c11f6522bb23d
