@@ -6,11 +6,28 @@ contract ReceiverPays {
     address owner = msg.sender;
 
     mapping(uint256 => bool) usedNonces;
+    mapping(uint256 => address) noncesRecipients;
+    mapping(uint256 => uint256) noncesAmount;
 
     constructor() payable {}
     
     function moreMoney() public payable {
         require(msg.sender == owner);
+    }
+    
+    function balanceOf() public view returns(uint256) {
+        require(msg.sender == owner);
+       return address(this).balance;
+    }
+    
+      function recipients(uint256 nonce) public view returns(address) {
+        require(noncesRecipients[nonce] != address(0), 'Este cheque no se ha pagado');
+       return noncesRecipients[nonce];
+    }
+    
+      function amountPaid(uint256 nonce) public view returns(uint256) {
+        require(noncesAmount[nonce] != 0, 'Este cheque no se ha pagado');
+       return noncesAmount[nonce];
     }
 
     function claimPayment(uint256 amount, uint256 nonce, bytes memory signature) public {
@@ -23,6 +40,9 @@ contract ReceiverPays {
         require(recoverSigner(message, signature) == owner);
 
         msg.sender.transfer(amount);
+        noncesRecipients[nonce] = msg.sender;
+        noncesAmount[nonce] = amount;
+        
     }
 
     /// destroy the contract and reclaim the leftover funds.
