@@ -12,6 +12,8 @@
     "chai": "^4.3.4",
     "dotenv": "^8.2.0",
     "ethereum-waffle": "^3.3.0",
+    "ethereumjs-abi": "^0.6.8",
+    "ethereumjs-util": "^7.0.10",
     "ethers": "^5.3.1",
     "hardhat": "^2.3.3",
     "react": "^17.0.2",

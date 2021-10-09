@@ -1,8 +1,10 @@
 import './App.css';
 import { useState } from 'react';
 import { ethers } from 'ethers'
-import Presale from './artifacts/contracts/PaymentChannel.sol/PaymentChannel.json'
+//import Presale from './artifacts/contracts/PaymentChannel.sol/PaymentChannel.json'
 const web3 = require('web3');
+const ethereumjs = require('ethereumjs-util')
+const abi = require('ethereumjs-abi');
 require('dotenv').config();
 
 
@@ -10,14 +12,17 @@ require('dotenv').config();
 
 function App() {
 
-  const { PRIVATE_KEY, PUBLIC_KEY } = process.env;
+  //const { PRIVATE_KEY, PUBLIC_KEY } = process.env;
+  const [amount, setAmount] = useState(100000000000000000);
+  const [recipient, setRecipient] = useState('0x1D918aD261752d71FFD63EF9Fb217001C5875005');
+  const [nonce, setNonce] = useState( Math.floor(new Date().getTime()/1000.0));
+  var expectedSigner;
 
 // contrato deployado..
-const contractAddress = "0xaF5E4E9e9fFfEe3799f8cd6dBcf8a4d996816c34";
+const contractAddress = "0x79353b87D4A0D5d5DF4B2e91A22D353415716913";
 
-  const [defaultaddress] = useState(requestAccount());
-  //const [amount, check] = useState(0);
-  //const [recipient, setRecipient] = useState('0x');
+  var [signature, setSignature] = useState('');
+
   console.log('Billetera conectada? ',window.ethereum.isConnected());
 
 
@@ -26,91 +31,71 @@ const contractAddress = "0xaF5E4E9e9fFfEe3799f8cd6dBcf8a4d996816c34";
     //console.log('mira el request', request );
   }
 
-//   let signPayment = async () => {
-//    // const accounts = await web3.eth.getAccounts()
-//     //const hash = web3.utils.soliditySha3(recipient, ethers.utils.parseEther(amount), nonce, contractAddress)
+ //const signer =  ethereum.enable().then(console.log)
 
-//     const tx = {
+ //ethereum.request({method:"personal_sign", params: [account, hash]}).then(console.log)
 
-//       to: recipient,
-//       value:ethers.utils.parseEther(amount),
-//       gas: 2000000,
-//       gasPrice: '234567897654321',
-//       nonce: nonce
-//     }
+function constructPaymentMessage(contractAddress, amount) {
+    var hash = abi.soliditySHA3(
+        ["address", "uint256"],
+        [contractAddress, amount]
+    );
+    document.querySelector('#hash').innerHTML = hash;
+}
 
-//     try {
-//         const sigObject = await web3.eth.accounts.signTransaction(tx, `0x${PRIVATE_KEY}`)
-//         console.log(amount, nonce, sigObject)
-//     } catch (error) {
-//         console.log(error)
-//     }
-// } 
+function signMessage(message, callback) {
+    web3.eth.personal.sign(
+        "0x" + message.toString("hex"),
+        web3.eth.defaultAccount,
+        callback
+    );
+}
 
-  async function SigningCheck() {
-  
-    const recipient = '0x1D918aD261752d71FFD63EF9Fb217001C5875005';
-    const nonce = '10' // recuerda que no se puede repetir.
-    const amount = '0.1';
+// recipient is the address that should be paid.
+// amount, in wei, specifies how much ether should be sent.
+// nonce can be any unique number to prevent replay attacks
+// contractAddress is used to prevent cross-contract replay attacks
+// recipient is the address that should be paid.
+// amount, in wei, specifies how much ether should be sent.
+// nonce can be any unique number to prevent replay attacks
+// contractAddress is used to prevent cross-contract replay attacks
+function signPayment(recipient, amount, nonce, contractAddress) {
+  var hash = "0x" + abi.soliditySHA3(
+      ["address", "uint256", "uint256", "address"],
+      [recipient, amount, nonce, contractAddress]
+  ).toString("hex");
+  document.querySelector('#hash').innerHTML = hash;
+  setSignature(hash);
+  web3.eth.personal.sign(hash, web3.eth.defaultAccount, console.log());
+}
 
-  let provider = new ethers.providers.Web3Provider(window.ethereum)
-  let signer = provider.getSigner()
-    console.log('signer ', signer);
 
-  let BNBamount = ethers.utils.parseEther(amount)
-  console.log(BNBamount);
-  let dataHash =  ethers.utils.solidityKeccak256 (['address','uint256','uint256','address'],[recipient, nonce, BNBamount, contractAddress])
-  let bytesDataHash = ethers.utils.arrayify(dataHash)
-  let signature = await signer.signMessage(bytesDataHash)
-  let sigBreakdown = ethers.utils.splitSignature(signature)
 
-  console.log('firma? ',sigBreakdown );
+// this mimics the prefixing behavior of the eth_sign JSON-RPC method.
+function prefixed(hash) {
+    return abi.soliditySHA3(
+        ["string", "bytes32"],
+        ["\x19Ethereum Signed Message:\n32", hash]
+    );
+}
 
-  }
+function recoverSigner(message, signature) {
+    var split = ethereumjs.Util.fromRpcSig(signature);
+    var publicKey = ethereumjs.Util.ecrecover(message, split.v, split.r, split.s);
+    var signer = ethereumjs.Util.pubToAddress(publicKey).toString("hex");
+    return signer;
+}
 
-  // async function fetchrate() {
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     const provider = new ethers.providers.Web3Provider(window.ethereum)
-  //    // console.log({ provider })
-  //     const contract = new ethers.Contract(contractAddress, Presale.abi, provider)
-  //     try {
-  //       const data = await contract.rate();
-  //       console.log('Tokens por un BNB: ', data.toString());
-  //     } catch (err) {
-  //       console.log("Error: ", err)
-  //     }
-  //   }    
-  // }
-
-  // async function getBalance() {
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
-  //     const provider = new ethers.providers.Web3Provider(window.ethereum);
-  //     const contract = new ethers.Contract(contractAddress, Presale.abi, provider);
-  //     const balance = await contract.TokenBalance();
-  //     const tokens =  balance.toString();
-  //     console.log('Tokens disponibles: ', ethers.utils.formatUnits(tokens));
-  //     console.log("Solicitud de cuenta : ", account.toString());
-  //   }
-  // }
-  // parsear decimales a weis.
-  //ethers.utils.parseEther('1.2');
-
-  // async function buytokens() {
-  //   if (typeof window.ethereum !== 'undefined') {
-  //     const [account] = await window.ethereum.request({ method: 'eth_requestAccounts' });
-  //     console.log('cuenta conectada: ', account);
-  //     const provider = new ethers.providers.Web3Provider(window.ethereum);
-  //     const signer = provider.getSigner();
-  //     const contract = new ethers.Contract(contractAddress, Presale.abi, signer);
-  //    // console.log('amount', amount);
-  //     //console.log('signer', signer);
-  //    const bnbamount =ethers.utils.parseEther(amount);
-  //     const transation = await contract.buyTokens(account);
-  //     await transation.wait();
-  //     console.log(`${bnbamount} Weis  successfully sent from ${account}`);
-  //   }
-  // }
+function isValidSignature(contractAddress, amount, signature, expectedSigner) {
+    var message = prefixed(constructPaymentMessage(contractAddress, amount));
+    var signer = recoverSigner(message, signature);
+    if (signer.toLowerCase() ==
+        ethereumjs.Util.stripHexPrefix(expectedSigner).toLowerCase()) {
+          document.querySelector('#ok').innerHTML = 'Es el mismo firmante';
+        } else {
+          document.querySelector('#ok').innerHTML = 'No es el mismo';
+        }
+}
 
   return (
     <div className="App">
@@ -118,13 +103,21 @@ const contractAddress = "0xaF5E4E9e9fFfEe3799f8cd6dBcf8a4d996816c34";
         {/* <button onClick={fetchrate}>Tokens por 1 BNB</button>
         <button onClick={getBalance}>Tokens disponibles</button> */}
 
-        <button onClick={SigningCheck}>Firmar</button>
-        {/* <input onChange={e => check(e.target.value)} placeholder={amount} value={amount}/>
-        <input onChange={e => setRecipient(e.target.value)} placeholder={recipient} value={recipient}/> */}
 
-        {/* <input placeholder={defaultaddress} value={defaultaddress}/> */}
-        {/* <input onChange={e => setAmount(e.target.value)} placeholder={amount} value={amount}/>
-        <button onClick={buytokens}>Comprar tokens</button> */}
+              <input className="" onChange={e => setRecipient(e.target.value)} id="" placeholder="Deudor" value={recipient} />
+              <input className="" onChange={e => setAmount(e.target.value)} id="" placeholder="Cantidad en BNBs" value={amount} />
+              <input className="" onChange={e => setNonce(e.target.value)} id="" placeholder="Nonce" value={nonce} />
+              <input className="" id="" placeholder="Contract Address" defaultValue={contractAddress} />
+              <button onClick={signPayment}>Firmar</button>
+
+              <h2 id="hash">...</h2>
+
+              <input className="" id="" placeholder="Contract Address" defaultValue={contractAddress} />
+              <input className="" onChange={e => setAmount(e.target.value)} id="" placeholder="A pagar" value={amount} />
+              <input className="" id="" placeholder="Signature" onChange={e => setSignature(e.target.value)} value={signature} />
+              <input className="" id="" placeholder="Direccion pagador" defaultValue={expectedSigner} />
+              <button onClick={isValidSignature}>Comprobar</button>
+              <h2 id="ok">...</h2>
       </header>
     </div>
   );

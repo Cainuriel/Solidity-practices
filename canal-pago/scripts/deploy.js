@@ -14,12 +14,15 @@ async function main() {
   // await hre.run('compile');
 
   // We get the contract to deploy
-  const Payments = await hre.ethers.getContractFactory("PaymentChannel");
-  const payments = await Payments.deploy();
 
-  await payments.deployed();
+  const Payments = await hre.ethers.getContractFactory("SimplePaymentChannel");
 
-  console.log("ReceiverPays contract deployed to:", payments.address);
+ // console.log('payments: ', Payments);
+  const payments = await Payments.deploy("SimplePaymentChannel", {args:['0xdcf95741E632aA0Fe5a4d9cbD97e0CFaFb20B869', 9006],value: "1000000000000000000"});
+
+  //await payments.deployed();
+
+  //console.log("ReceiverPays contract deployed to:", payments.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
