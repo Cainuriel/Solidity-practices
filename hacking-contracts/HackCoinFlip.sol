@@ -15,7 +15,7 @@ interface ContractInterface {
 }
 
 
-contract Hack {
+contract HackCoinFlip {
     
   ContractInterface contractOriginal;
 
