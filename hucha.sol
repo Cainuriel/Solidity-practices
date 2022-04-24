@@ -1,4 +1,8 @@
-pragma solidity ^0.5.11;
+
+// SPDX-License-Identifier: MIT
+
+// https://spdx.org/licenses/
+pragma solidity ^0.8.0;
 
 contract Hucha {
     
@@ -6,7 +10,11 @@ contract Hucha {
     mapping(address => bool) debtor;
     mapping(uint => uint) check; 
 
-    
+    /**
+   * Event for operations
+   * @param msg message of operation
+   * @param amount of operation
+   */
     event operations(string msg, uint amount);
     
     
@@ -16,7 +24,7 @@ contract Hucha {
         _;
     }
     
-    constructor() public {
+    constructor()  {
         owner = msg.sender; 
     }
     
@@ -33,21 +41,21 @@ contract Hucha {
     }
     
      function extractFunds(uint amount) segurity public {
-              msg.sender.transfer(amount);
+              payable(msg.sender).transfer(amount);
               emit operations("Se han sacado: ", amount);
               
     }
     
     function kill() segurity public {
-        selfdestruct(msg.sender);
+        selfdestruct(payable(msg.sender));
     } 
     
    
 
 function paycheck(uint _check) public {
-        require(debtor[msg.sender]);
-        require(check[_check] != 0); // si no existe el cheque devolvera cero. 
-        msg.sender.transfer(check[_check]);
+        require(debtor[msg.sender], "Usted no es el propietario de este cheque");
+        require(check[_check] != 0, "Este cheque no existe"); // si no existe el cheque devolvera cero. 
+        payable(msg.sender).transfer(check[_check]);
         debtor[msg.sender] = false;
         
     }
@@ -57,9 +65,5 @@ function paycheck(uint _check) public {
         debtor[_address] = true;
         
     }
-    
-    
-
-    
     
 }
